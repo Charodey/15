@@ -20,6 +20,7 @@ class Game15:
         pygame.init()
         pygame.display.set_caption(self.TITLE)
         self.my_font = pygame.font.SysFont('monospace', 48)
+        self.screen = pygame.display.set_mode(self.SIZE)
 
     def __set_options(self, side_size):
         self.side_size = side_size
@@ -27,12 +28,11 @@ class Game15:
         self.rect_size = self.WIDTH / side_size
 
     def start(self):
-        screen = pygame.display.set_mode(self.SIZE)
         board = self.__generate_board()
-        self.render(screen, board)
-        self.__process(screen, board)
+        self.__render(board)
+        self.__process(board)
 
-    def __process(self, screen, board):
+    def __process(self, board):
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -41,9 +41,9 @@ class Game15:
             is_clicked, *q = pygame.mouse.get_pressed()
 
             if is_clicked:
-                self.__move_dice(screen, board)
+                self.__move_dice(board)
 
-    def __move_dice(self, screen, board):
+    def __move_dice(self, board):
         """Перемещение фишки по полю"""
         x, y = pygame.mouse.get_pos()
         i = int(x / self.rect_size)
@@ -55,8 +55,8 @@ class Game15:
             empty_pos = board.index(self.dice_count)
             if empty_pos in [pos-1, pos+1, pos+self.side_size, pos-self.side_size]:
                 board[empty_pos], board[pos] = board[pos], board[empty_pos]
-                self.render(screen, board)
-                self.check_win(screen, board)
+                self.__render(board)
+                self.__check_win(board)
 
     def check_board(self, board):
         """Проверяем, что сгенерированный набор фишек - решаем"""
@@ -83,8 +83,8 @@ class Game15:
         random.shuffle(board)
         return board if self.check_board(board) else self.__generate_board()
 
-    def render(self, screen, board):
-        screen.fill(self.BLACK)
+    def __render(self, board):
+        self.screen.fill(self.BLACK)
 
         pos = -1
         for n in board:
@@ -104,18 +104,18 @@ class Game15:
             height = self.rect_size - self.BORDER_WIDTH * (2 if j == self.side_size - 1 else 1)
             # отрисовка фишки
             rect = pygame.Rect(x, y, width, height)
-            pygame.draw.rect(screen, self.GRAY, rect)
+            pygame.draw.rect(self.screen, self.GRAY, rect)
             # отрисовки надписи на фишке
             label = self.my_font.render(str(n), 1, (self.WHITE))
-            screen.blit(label, (x + width/2 - label.get_width()/2, y + height/2 - label.get_height()/2))
+            self.screen.blit(label, (x + width/2 - label.get_width()/2, y + height/2 - label.get_height()/2))
 
         pygame.display.flip()
 
-    def check_win(self, screen, board):
+    def __check_win(self, board):
         for i in range(1, self.dice_count + 1):
             if i != board[i-1]:
                 break
             if i == self.dice_count:
                 label = pygame.font.SysFont('monospace', 82).render('WIN', 1, (220, 10, 10))
-                screen.blit(label, (self.WIDTH/2 - label.get_width()/2, self.HEIGTH/2 - label.get_height()/2))
+                self.screen.blit(label, (self.WIDTH/2 - label.get_width()/2, self.HEIGTH/2 - label.get_height()/2))
                 pygame.display.flip()
