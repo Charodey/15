@@ -8,26 +8,30 @@ import pygame
 class Game15:
     TITLE = 'Пятнашки'
 
+    DEFAULT_SIDE_SIZE = 4
     SIZE = WIDTH, HEIGTH = 400, 400
     BORDER_WIDTH = 5
     BLACK = 0, 0, 0
     GRAY = 136, 136, 136
     WHITE = 220, 220, 220
 
-    def __init__(self, side_size=4):
+    screen = None
+    __click_count = 0
+
+    def __init__(self, side_size=DEFAULT_SIDE_SIZE):
         self.__set_options(side_size)
 
         pygame.init()
         pygame.display.set_caption(self.TITLE)
         self.my_font = pygame.font.SysFont('monospace', 48)
-        self.screen = pygame.display.set_mode(self.SIZE)
 
     def __set_options(self, side_size):
-        self.side_size = side_size
-        self.dice_count = side_size ** 2
-        self.rect_size = self.WIDTH / side_size
+        self.side_size = side_size if 2 <= side_size <= 10 else self.DEFAULT_SIDE_SIZE
+        self.dice_count = self.side_size ** 2
+        self.rect_size = self.WIDTH / self.side_size
 
     def start(self):
+        self.screen = pygame.display.set_mode(self.SIZE)
         board = self.__generate_board()
         self.__render(board)
         self.__process(board)
@@ -52,16 +56,21 @@ class Game15:
         n = board[pos]
 
         if n != self.dice_count:
+            self.__click_count += 1
             empty_pos = board.index(self.dice_count)
             if empty_pos in [pos-1, pos+1, pos+self.side_size, pos-self.side_size]:
                 board[empty_pos], board[pos] = board[pos], board[empty_pos]
                 self.__render(board)
-                self.__check_win(board)
+                if self.__is_win(board):
+                    self.__draw_win()
 
-    def check_board(self, board):
-        """Проверяем, что сгенерированный набор фишек - решаем"""
+    def is_solvable_board(self, board):
+        """Проверяем, что сгенерированный набор фишек - решаем
 
-        # todo: ! не работает для нечетных полей: 3x3, 5x5
+        Определяем "Четность расклада",
+        для досок с четным количеством полей - она должна сойтись,
+        для досок с нечетным количеством полей - разойтись.
+        """
         last = []
         total = 0
         pos = -1
@@ -74,14 +83,14 @@ class Game15:
                 for p in range(1, point):
                     if p not in last:
                         total = total + 1
-
-        return total % 2 == 0
+        # сравнение "Четности расклада"
+        return total % 2 == len(board) % 2
 
     def __generate_board(self):
         """Генерация фишек"""
         board = list(range(1, self.dice_count + 1))
         random.shuffle(board)
-        return board if self.check_board(board) else self.__generate_board()
+        return board if self.is_solvable_board(board) else self.__generate_board()
 
     def __render(self, board):
         self.screen.fill(self.BLACK)
@@ -111,11 +120,20 @@ class Game15:
 
         pygame.display.flip()
 
-    def __check_win(self, board):
+    def __is_win(self, board):
         for i in range(1, self.dice_count + 1):
             if i != board[i-1]:
-                break
+                return False
             if i == self.dice_count:
-                label = pygame.font.SysFont('monospace', 82).render('WIN', 1, (220, 10, 10))
-                self.screen.blit(label, (self.WIDTH/2 - label.get_width()/2, self.HEIGTH/2 - label.get_height()/2))
-                pygame.display.flip()
+                return True
+
+    def __draw_win(self):
+        color = 220, 10, 10
+
+        label = pygame.font.SysFont('monospace', 82).render('WIN', 1, color)
+        self.screen.blit(label, (self.WIDTH/2 - label.get_width()/2, self.HEIGTH/2 - label.get_height()/2))
+
+        label = pygame.font.SysFont('monospace', 20).render('number of moves: {}'.format(self.__click_count), 1, color)
+        self.screen.blit(label, (self.WIDTH/2 - label.get_width()/2, self.HEIGTH - self.HEIGTH/4 - label.get_height()/2))
+
+        pygame.display.flip()
