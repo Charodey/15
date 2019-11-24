@@ -56,9 +56,9 @@ class Game15:
         n = board[pos]
 
         if n != self.dice_count:
-            self.__click_count += 1
             empty_pos = board.index(self.dice_count)
             if empty_pos in [pos-1, pos+1, pos+self.side_size, pos-self.side_size]:
+                self.__click_count += 1
                 board[empty_pos], board[pos] = board[pos], board[empty_pos]
                 self.__render(board)
                 if self.__is_win(board):
