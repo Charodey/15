@@ -64,7 +64,8 @@ class Game15:
                 if self.__is_win(board):
                     self.__draw_win()
 
-    def is_solvable_board(self, board):
+    @staticmethod
+    def is_solvable_board(board):
         """Проверяем, что сгенерированный набор фишек - решаем
 
         Определяем "Четность расклада",
@@ -76,8 +77,8 @@ class Game15:
         pos = -1
         for point in board:
             pos = pos + 1
-            if point == self.dice_count:
-                total = total + int(pos / self.side_size) + 1
+            if point == len(board):
+                total = total + int(pos / (len(board) ** .5)) + 1
             else:
                 last.append(point)
                 for p in range(1, point):
