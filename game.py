@@ -11,6 +11,8 @@ class Game15:
     SIZE = WIDTH, HEIGTH = 400, 400
     BORDER_WIDTH = 5
     BLACK = 0, 0, 0
+    GRAY = 136, 136, 136
+    WHITE = 220, 220, 220
 
     def __init__(self, side_size=4):
         self.__set_options(side_size)
@@ -59,7 +61,7 @@ class Game15:
     def check_board(self, board):
         """Проверяем, что сгенерированный набор фишек - решаем"""
 
-        # todo: ! не работает для поля 3x3
+        # todo: ! не работает для нечетных полей: 3x3, 5x5
         last = []
         total = 0
         pos = -1
@@ -90,18 +92,21 @@ class Game15:
             j = int(pos / self.side_size)
             i = pos % self.side_size
 
+            # пустое место на доске - пропускаем
             if n == self.dice_count:
                 continue
 
+            # координаты верхнего левого угла фишки с учетом отрисовки граней
             x = self.rect_size * i + self.BORDER_WIDTH
             y = self.rect_size * j + self.BORDER_WIDTH
-            width = self.rect_size - self.BORDER_WIDTH * (2 if i == 3 else 1)
-            height = self.rect_size - self.BORDER_WIDTH * (2 if j == 3 else 1)
-
+            # размеры фишки с учетом отрисовки граней
+            width  = self.rect_size - self.BORDER_WIDTH * (2 if i == self.side_size - 1 else 1)
+            height = self.rect_size - self.BORDER_WIDTH * (2 if j == self.side_size - 1 else 1)
+            # отрисовка фишки
             rect = pygame.Rect(x, y, width, height)
-            pygame.draw.rect(screen, [136, 136, 136], rect)
-
-            label = self.my_font.render(str(n), 1, (220, 220, 220))
+            pygame.draw.rect(screen, self.GRAY, rect)
+            # отрисовки надписи на фишке
+            label = self.my_font.render(str(n), 1, (self.WHITE))
             screen.blit(label, (x + width/2 - label.get_width()/2, y + height/2 - label.get_height()/2))
 
         pygame.display.flip()
