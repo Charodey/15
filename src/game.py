@@ -25,6 +25,9 @@ class Game15:
         pygame.display.set_caption(self.TITLE)
         self.my_font = pygame.font.SysFont('monospace', 48)
 
+    def __del__(self):
+        print(self.__l_board)
+
     def __set_options(self, side_size):
         self.side_size = side_size if 2 <= side_size <= 10 else self.DEFAULT_SIDE_SIZE
         self.dice_count = self.side_size ** 2
@@ -32,7 +35,7 @@ class Game15:
 
     def start(self):
         self.screen = pygame.display.set_mode(self.SIZE)
-        board = self.__generate_board()
+        self.__l_board = board = Game15.__generate_board(self.dice_count)
         self.__render(board)
         self.__process(board)
 
@@ -87,11 +90,12 @@ class Game15:
         # сравнение "Четности расклада"
         return total % 2 == len(board) % 2
 
-    def __generate_board(self):
+    @classmethod
+    def __generate_board(cls, dice_count):
         """Генерация фишек"""
-        board = list(range(1, self.dice_count + 1))
+        board = list(range(1, dice_count + 1))
         random.shuffle(board)
-        return board if self.is_solvable_board(board) else self.__generate_board()
+        return board if cls.is_solvable_board(board) else cls.__generate_board(dice_count)
 
     def __render(self, board):
         self.screen.fill(self.BLACK)
@@ -121,12 +125,13 @@ class Game15:
 
         pygame.display.flip()
 
-    def __is_win(self, board):
-        for i in range(1, self.dice_count + 1):
+    @staticmethod
+    def __is_win(board):
+        for i in range(1, len(board) + 1):
             if i != board[i-1]:
                 return False
-            if i == self.dice_count:
-                return True
+
+        return True
 
     def __draw_win(self):
         color = 220, 10, 10
